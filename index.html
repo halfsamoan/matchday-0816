@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" content="#fff3f6" />
     <meta name="description" content="성희에게 보내는 2026년 8월 16일 데이트 초대장" />
     <title>성희야, 8월 16일 어때?</title>
     <link rel="stylesheet" href="./styles.css" />
@@ -17,9 +17,13 @@
       <div class="code-feed__lines" id="code-lines"></div>
     </aside>
 
-    <div class="stadium-light stadium-light--left" aria-hidden="true"></div>
-    <div class="stadium-light stadium-light--right" aria-hidden="true"></div>
-    <div class="pitch-lines" aria-hidden="true"></div>
+    <div class="love-scene" aria-hidden="true">
+      <span class="love-scene__heart love-scene__heart--one">♥</span>
+      <span class="love-scene__heart love-scene__heart--two">♥</span>
+      <span class="love-scene__heart love-scene__heart--three">♥</span>
+      <span class="love-scene__ball"></span>
+      <span class="love-scene__pitch"></span>
+    </div>
 
     <main class="app-shell">
       <header class="match-header">
@@ -28,37 +32,36 @@
           <strong>1995</strong>
         </div>
         <div class="match-meta">
-          <span>MATCHDAY</span>
+          <span>우리의 약속</span>
           <strong id="header-schedule">2026.08.16 · 16:00</strong>
         </div>
-        <div class="step-count" id="step-count" aria-live="polite">01 / 04</div>
+        <div class="step-count" id="step-count" aria-live="polite">1 / 4</div>
       </header>
 
       <section class="panel screen" id="screen-intro" data-step="1" aria-labelledby="intro-title">
         <div class="red-rule"></div>
-        <p class="eyebrow">단독 협상 제안</p>
-        <h1 id="intro-title">성희야,<br /><em>나랑 데이트 할래?</em></h1>
-        <p class="lead">경기 일정도 비워뒀고, 계획은 이미 거의 끝났어.</p>
+        <p class="eyebrow">to. 성희</p>
+        <h1 id="intro-title">8월 16일,<br /><em>나랑 데이트할래?</em></h1>
+        <p class="lead">오후 네 시는 내가 비워뒀어.<br />성희도 같이 비워주면 좋겠다.</p>
         <div class="button-row button-row--intro">
           <button class="button button--primary" id="yes-button" type="button">응, 좋아</button>
           <button class="button button--muted escape-button" id="no-button" type="button">싫어</button>
         </div>
-        <p class="tiny-note">* 답은 두 개처럼 보이지만 아닐 수도 있음</p>
       </section>
 
       <section class="panel screen" id="screen-confirm" data-step="1" aria-labelledby="confirm-title" hidden>
         <div class="red-rule"></div>
-        <p class="eyebrow">협상 타결</p>
-        <h2 id="confirm-title">진짜 좋다고?</h2>
-        <p class="lead">방금 못 들은 척할 뻔했어.<br />한 번만 더 확실하게 말해줘.</p>
-        <button class="button button--primary button--wide" id="confirm-button" type="button">응응, 진짜 좋아</button>
+        <p class="eyebrow">진짜 예상 못 했어</p>
+        <h2 id="confirm-title">잠시만..<br />좋다고?? 😭</h2>
+        <p class="lead">난 네가 싫다고 할 줄 알았어...</p>
+        <button class="button button--primary button--wide" id="confirm-button" type="button">네 주인님</button>
       </section>
 
       <section class="panel screen" id="screen-schedule" data-step="2" aria-labelledby="schedule-title" hidden>
         <div class="red-rule"></div>
-        <p class="eyebrow">경기 일정 등록</p>
-        <h2 id="schedule-title">우리 언제 만날까?</h2>
-        <p class="lead">편한 날짜를 골라봐. 분명 선택은 자유야.</p>
+        <p class="eyebrow">우리 만나는 날</p>
+        <h2 id="schedule-title">성희가 편한 날을<br />골라줘.</h2>
+        <p class="lead">나는 슬쩍 바라는 날이 있긴 해.</p>
 
         <div class="schedule-form" id="schedule-form">
           <label class="field" id="date-field">
@@ -68,24 +71,56 @@
           <div class="field field--fixed">
             <span>시간</span>
             <strong id="fixed-time">오후 4:00</strong>
-            <small>이건 이미 정해뒀어</small>
+            <small>이때 만나면 좋겠어</small>
           </div>
         </div>
 
+        <section class="math-challenge" id="math-challenge" aria-labelledby="math-title" hidden>
+          <p class="math-challenge__kicker">그날을 꼭 원한다면</p>
+          <h3 id="math-title">이것만 증명해 줘.</h3>
+          <p class="math-challenge__copy">성공하면 성희가 고른 날짜로 만나줄게.</p>
+          <div class="riemann-card" id="problem-card">
+            <span id="problem-name">Riemann hypothesis</span>
+            <div class="math-expression" id="problem-expression">
+              ζ(s) = 0, &nbsp;0 &lt; Re(s) &lt; 1<br />
+              <strong>⟹ &nbsp;Re(s) = ½</strong>
+            </div>
+            <p id="problem-prompt">비자명한 모든 영점에 대해 증명하시오.</p>
+          </div>
+          <label class="proof-field">
+            <span>증명 과정</span>
+            <textarea id="proof-input" rows="3" placeholder="여기에 세기의 증명을 입력..." spellcheck="false"></textarea>
+          </label>
+          <button class="button button--primary button--wide" id="proof-button" type="button">증명 제출</button>
+          <p class="status-message" id="proof-status" aria-live="assertive"></p>
+          <button class="text-button math-give-up" id="give-up-math-button" type="button" hidden>다른 날짜로 다시 도전</button>
+        </section>
+
+        <section class="calendar-explosion" id="calendar-explosion" aria-labelledby="calendar-explosion-title" hidden>
+          <p class="math-challenge__kicker">달력 긴급회의 결과</p>
+          <h3 id="calendar-explosion-title">16일만 남기기로 했대.</h3>
+          <div class="mini-calendar">
+            <div class="mini-calendar__head"><strong>2026년 8월</strong><span>셋, 둘, 하나…</span></div>
+            <div class="mini-calendar__week" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+            <div class="mini-calendar__days" id="calendar-days" aria-label="2026년 8월 달력"></div>
+          </div>
+          <p class="calendar-explosion__caption" id="calendar-explosion-caption">다른 날짜들이 눈치 보는 중...</p>
+        </section>
+
         <div class="date-lock" id="date-lock" hidden>
-          <p>달력이 도망갔어.</p>
-          <button class="button button--outline button--wide" id="accept-date-button" type="button">8월 16일로 마음 고쳐먹기</button>
+          <p>사실 내가 보고 싶은 날은 정해져 있었어 💌</p>
+          <button class="button button--outline button--wide" id="accept-date-button" type="button">8월 16일로 약속하기</button>
         </div>
 
         <p class="status-message" id="date-status" aria-live="assertive"></p>
-        <button class="button button--primary button--wide" id="schedule-button" type="button">이 날 좋아</button>
+        <button class="button button--primary button--wide" id="schedule-button" type="button">이 날로 할래</button>
       </section>
 
       <section class="panel screen" id="screen-menu" data-step="3" aria-labelledby="menu-title" hidden>
         <div class="red-rule"></div>
-        <p class="eyebrow">오늘의 선발 메뉴</p>
-        <h2 id="menu-title">뭐 먹고 싶어?</h2>
-        <p class="lead">난 진짜 다 좋아. 성희가 하나만 골라줘.</p>
+        <p class="eyebrow">데이트 메뉴</p>
+        <h2 id="menu-title">우리 뭐 먹을까?</h2>
+        <p class="lead">성희가 먹고 싶은 걸로 하나만 골라줘.</p>
 
         <div class="menu-grid" id="menu-grid" role="group" aria-label="음식 메뉴">
           <button class="menu-card" type="button" data-menu="피자"><span>🍕</span>피자</button>
@@ -107,21 +142,21 @@
 
       <section class="panel screen" id="screen-result" data-step="4" aria-labelledby="result-title" hidden>
         <div class="red-rule"></div>
-        <p class="eyebrow">최종 명단 발표</p>
-        <h2 id="result-title">우리 둘, 출전 확정.</h2>
-        <p class="lead">싫다고 안 해줘서 기뻐. 나 꽤 기대하고 있어.</p>
+        <p class="eyebrow">8월 16일에 만나</p>
+        <h2 id="result-title">우리 약속 생겼다 ♥</h2>
+        <p class="lead">이제 8월 16일이 조금 더 기다려질 것 같아.</p>
 
         <div class="promise-card" id="promise-card">
           <div class="promise-card__top">
-            <span>DATE MATCH</span>
-            <strong>BFC 1995</strong>
+            <span>우리의 데이트 약속</span>
+            <strong>♥</strong>
           </div>
           <dl>
             <div><dt>날짜</dt><dd id="result-date">2026년 8월 16일</dd></div>
             <div><dt>시간</dt><dd id="result-time">오후 4:00</dd></div>
             <div><dt>메뉴</dt><dd id="result-menu">-</dd></div>
           </dl>
-          <div class="promise-card__footer">성희 × 나</div>
+          <div class="promise-card__footer">성희랑 나, 둘이서 ♥</div>
         </div>
 
         <div class="result-actions">

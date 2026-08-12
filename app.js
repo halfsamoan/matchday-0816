@@ -1,20 +1,42 @@
 import {
   TARGET_DATE,
   TARGET_TIME,
-  datePrankForAttempt,
+  challengeIndexForAttempt,
   formatKoreanDate,
   formatKoreanTime,
   noButtonLabel,
   normalizeCustomMenu,
+  pickFarPosition,
+  shouldExplodeAfterAttempt,
   validateSchedule,
 } from "./logic.mjs";
 
 const state = {
   dateAttempts: 0,
-  dateDodgeTimer: 0,
   noEscapes: 0,
   selectedMenu: "",
 };
+
+const MATH_CHALLENGES = [
+  {
+    name: "Riemann hypothesis",
+    expression: "ζ(s) = 0, &nbsp;0 &lt; Re(s) &lt; 1<br><strong>⟹ &nbsp;Re(s) = ½</strong>",
+    prompt: "제타 함수의 비자명한 모든 영점에 대해 증명하시오.",
+    rejection: "심사 결과: 아직 인류가 못 푼 문제래. 사랑의 용기는 인정 ♥",
+  },
+  {
+    name: "Navier–Stokes existence & smoothness",
+    expression: "∂u/∂t + (u·∇)u<br><strong>= −∇p + νΔu</strong><br>∇·u = 0",
+    prompt: "3차원에서 해가 항상 존재하며 매끄러움을 증명하시오.",
+    rejection: "유체가 너무 난리 났대. 수학계도 아직 답을 못 냈어 🥲",
+  },
+  {
+    name: "Yang–Mills mass gap",
+    expression: "D<sub>μ</sub>F<sup>μν</sup> = 0<br><strong>Δ = E₁ − E₀ &gt; 0</strong>",
+    prompt: "양–밀스 이론의 존재성과 양의 질량 간극을 증명하시오.",
+    rejection: "세 번째 난제도 미해결. 이제 달력이 직접 정하겠대 ㅋㅋ",
+  },
+];
 
 const screens = [...document.querySelectorAll(".screen")];
 const stepCount = document.querySelector("#step-count");
@@ -24,6 +46,17 @@ const scheduleForm = document.querySelector("#schedule-form");
 const scheduleButton = document.querySelector("#schedule-button");
 const dateStatus = document.querySelector("#date-status");
 const dateLock = document.querySelector("#date-lock");
+const mathChallenge = document.querySelector("#math-challenge");
+const proofInput = document.querySelector("#proof-input");
+const proofStatus = document.querySelector("#proof-status");
+const giveUpMathButton = document.querySelector("#give-up-math-button");
+const problemCard = document.querySelector("#problem-card");
+const problemName = document.querySelector("#problem-name");
+const problemExpression = document.querySelector("#problem-expression");
+const problemPrompt = document.querySelector("#problem-prompt");
+const calendarExplosion = document.querySelector("#calendar-explosion");
+const calendarDays = document.querySelector("#calendar-days");
+const calendarExplosionCaption = document.querySelector("#calendar-explosion-caption");
 const menuButton = document.querySelector("#menu-button");
 const menuStatus = document.querySelector("#menu-status");
 const customMenuWrap = document.querySelector("#custom-menu-wrap");
@@ -44,7 +77,7 @@ function showScreen(id) {
     screen.hidden = !active;
   });
   const active = document.querySelector(`#${id}`);
-  stepCount.textContent = `${String(active.dataset.step).padStart(2, "0")} / 04`;
+  stepCount.textContent = `${active.dataset.step} / 4`;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -55,22 +88,30 @@ function showToast(message) {
   showToast.timer = window.setTimeout(() => toast.classList.remove("is-visible"), 2200);
 }
 
-function moveNoButton(event) {
+function moveEscapingControl(element, event) {
   if (event?.cancelable) event.preventDefault();
+  const rect = element.getBoundingClientRect();
+  const pointerX = Number.isFinite(event?.clientX) ? event.clientX : rect.left + rect.width / 2;
+  const pointerY = Number.isFinite(event?.clientY) ? event.clientY : rect.top + rect.height / 2;
+  const position = pickFarPosition({
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+    elementWidth: rect.width || 118,
+    elementHeight: rect.height || 54,
+    pointerX,
+    pointerY,
+    padding: 14,
+  });
+  element.classList.add("is-escaping");
+  element.style.left = `${position.x}px`;
+  element.style.top = `${position.y}px`;
+}
+
+function moveNoButton(event) {
   if (event?.type === "click" && event.detail !== 0) return;
   state.noEscapes += 1;
   noButton.textContent = noButtonLabel(state.noEscapes);
-  noButton.classList.add("is-escaping");
-
-  const padding = 14;
-  const width = noButton.offsetWidth || 118;
-  const height = noButton.offsetHeight || 54;
-  const maxX = Math.max(padding, window.innerWidth - width - padding);
-  const maxY = Math.max(padding, window.innerHeight - height - padding);
-  const x = Math.min(maxX, Math.max(padding, Math.random() * maxX));
-  const y = Math.min(maxY, Math.max(padding, Math.random() * maxY));
-  noButton.style.left = `${x}px`;
-  noButton.style.top = `${y}px`;
+  moveEscapingControl(noButton, event);
 }
 
 noButton.addEventListener("pointerenter", (event) => {
@@ -91,32 +132,129 @@ document.querySelector("#yes-button").addEventListener("click", () => {
 document.querySelector("#confirm-button").addEventListener("click", () => showScreen("screen-schedule"));
 
 function setScheduleToTarget() {
+  scheduleForm.hidden = false;
+  scheduleForm.classList.remove("is-gone");
+  mathChallenge.hidden = true;
+  calendarExplosion.hidden = true;
+  dateLock.hidden = true;
+  scheduleButton.hidden = false;
   dateInput.value = TARGET_DATE;
-  dateStatus.textContent = "그래, 역시 8월 16일이 제일 좋지.";
+  scheduleButton.removeAttribute("style");
+  scheduleButton.textContent = "이 날로 할래";
+  dateStatus.textContent = "그래, 우리 8월 16일에 만나자 ♥";
   scheduleButton.disabled = false;
 }
 
 document.querySelector("#accept-date-button").addEventListener("click", setScheduleToTarget);
 
-scheduleButton.addEventListener("pointerenter", () => {
-  if (state.dateAttempts === 1 && dateInput.value !== TARGET_DATE) {
-    const x = (Math.random() - .5) * Math.min(240, window.innerWidth * .45);
-    const y = (Math.random() - .5) * 100;
-    scheduleButton.style.transform = `translate(${x}px, ${y}px)`;
-    scheduleButton.textContent = "못 누르지롱";
+function showMathChallenge(attempt) {
+  const problem = MATH_CHALLENGES[challengeIndexForAttempt(attempt, MATH_CHALLENGES.length)];
+  problemName.textContent = problem.name;
+  problemExpression.innerHTML = problem.expression;
+  problemPrompt.textContent = problem.prompt;
+  problemCard.setAttribute("aria-label", `${problem.name}. ${problem.prompt}`);
+  scheduleForm.hidden = true;
+  scheduleButton.hidden = true;
+  dateLock.hidden = true;
+  calendarExplosion.hidden = true;
+  mathChallenge.hidden = false;
+  dateStatus.textContent = "";
+  proofInput.value = "";
+  proofStatus.textContent = "";
+  giveUpMathButton.hidden = true;
+  proofInput.focus();
+}
+
+document.querySelector("#proof-button").addEventListener("click", () => {
+  if (!proofInput.value.trim()) {
+    proofStatus.textContent = "증명 과정을 한 줄이라도 써줘야 심사하지 🤓";
+    proofInput.focus();
+    return;
   }
+
+  proofStatus.textContent = MATH_CHALLENGES[challengeIndexForAttempt(state.dateAttempts, MATH_CHALLENGES.length)].rejection;
+  giveUpMathButton.textContent = !shouldExplodeAfterAttempt(state.dateAttempts, MATH_CHALLENGES.length)
+    ? `다른 날짜로 다시 도전 (${state.dateAttempts + 1}/3)`
+    : "달력의 운명 보기";
+  giveUpMathButton.hidden = false;
 });
 
+giveUpMathButton.addEventListener("click", () => {
+  if (shouldExplodeAfterAttempt(state.dateAttempts, MATH_CHALLENGES.length)) {
+    explodeCalendar();
+    return;
+  }
+
+  mathChallenge.hidden = true;
+  scheduleForm.hidden = false;
+  scheduleButton.hidden = false;
+  dateInput.value = "";
+  dateStatus.textContent = `다음 기회 ${state.dateAttempts + 1}/3. 이번엔 다른 날을 골라봐.`;
+  dateInput.focus();
+});
+
+function buildCalendar() {
+  const firstDay = new Date(2026, 7, 1).getDay();
+  for (let i = 0; i < firstDay; i += 1) {
+    const blank = document.createElement("span");
+    blank.className = "calendar-blank";
+    calendarDays.append(blank);
+  }
+
+  for (let day = 1; day <= 31; day += 1) {
+    const cell = document.createElement("span");
+    cell.className = `calendar-day${day === 16 ? " is-target" : ""}`;
+    cell.textContent = day;
+    cell.setAttribute("aria-label", `8월 ${day}일${day === 16 ? ", 남은 날짜" : ""}`);
+    const angle = (day * 47) * Math.PI / 180;
+    const distance = 75 + (day % 5) * 17;
+    cell.style.setProperty("--blast-x", `${Math.cos(angle) * distance}px`);
+    cell.style.setProperty("--blast-y", `${Math.sin(angle) * distance}px`);
+    cell.style.setProperty("--blast-r", `${day % 2 ? 260 : -240}deg`);
+    cell.style.setProperty("--delay", `${(day % 8) * .045}s`);
+    calendarDays.append(cell);
+  }
+}
+
+function explodeCalendar() {
+  mathChallenge.hidden = true;
+  scheduleForm.hidden = true;
+  scheduleButton.hidden = true;
+  dateLock.hidden = true;
+  calendarExplosion.hidden = false;
+  calendarDays.classList.remove("is-exploding", "is-settled");
+  void calendarDays.offsetWidth;
+  calendarDays.classList.add("is-exploding");
+  calendarExplosionCaption.textContent = "펑! 16일 빼고 전부 사라지는 중...";
+  burstConfetti(34);
+
+  window.setTimeout(() => {
+    calendarDays.classList.remove("is-exploding");
+    calendarDays.classList.add("is-settled");
+    dateInput.min = TARGET_DATE;
+    dateInput.max = TARGET_DATE;
+    dateInput.value = TARGET_DATE;
+    calendarExplosionCaption.textContent = "진짜 16일 하나만 남았네 ♥";
+    dateLock.querySelector("p").textContent = "이쯤이면 8월 16일이 운명 맞지? 💌";
+    document.querySelector("#accept-date-button").textContent = "남은 16일로 약속하기";
+    dateLock.hidden = false;
+  }, 1450);
+}
+
+buildCalendar();
+
 dateInput.addEventListener("change", () => {
-  clearTimeout(state.dateDodgeTimer);
   scheduleButton.removeAttribute("style");
-  scheduleButton.textContent = "이 날 좋아";
+  scheduleButton.textContent = "이 날로 할래";
   dateStatus.textContent = "";
 });
 
 scheduleButton.addEventListener("click", () => {
-  scheduleButton.removeAttribute("style");
-  scheduleButton.textContent = "이 날 좋아";
+  if (!dateInput.value) {
+    dateStatus.textContent = "날짜를 먼저 골라줘.";
+    dateInput.focus();
+    return;
+  }
   const result = validateSchedule(dateInput.value, TARGET_TIME);
 
   if (result.ok) {
@@ -125,27 +263,7 @@ scheduleButton.addEventListener("click", () => {
   }
 
   state.dateAttempts += 1;
-  const prank = datePrankForAttempt(state.dateAttempts);
-  dateStatus.textContent = prank.message;
-
-  if (prank.mode === "reset") {
-    dateInput.value = "";
-    dateInput.focus();
-  } else if (prank.mode === "dodge") {
-    scheduleForm.classList.remove("is-dodging");
-    void scheduleForm.offsetWidth;
-    scheduleForm.classList.add("is-dodging");
-    clearTimeout(state.dateDodgeTimer);
-    state.dateDodgeTimer = setTimeout(() => {
-      if (state.dateAttempts === 2 && dateInput.value !== TARGET_DATE) dateInput.value = "";
-      scheduleForm.classList.remove("is-dodging");
-    }, 650);
-  } else {
-    clearTimeout(state.dateDodgeTimer);
-    scheduleForm.classList.add("is-gone");
-    dateLock.hidden = false;
-    scheduleButton.disabled = true;
-  }
+  showMathChallenge(state.dateAttempts);
 });
 
 document.querySelectorAll(".menu-card").forEach((button) => {
@@ -187,32 +305,41 @@ function drawPromiseCard() {
   const ctx = canvas.getContext("2d");
   ctx.scale(scale, scale);
 
-  ctx.fillStyle = "#090909";
+  const gradient = ctx.createLinearGradient(0, 0, 720, 900);
+  gradient.addColorStop(0, "#fff9fb");
+  gradient.addColorStop(1, "#ffe8ef");
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 720, 900);
-  ctx.fillStyle = "#e31b23";
-  ctx.fillRect(0, 0, 720, 22);
-  ctx.fillRect(44, 95, 80, 10);
 
-  ctx.fillStyle = "#77716d";
-  ctx.font = "700 18px monospace";
-  ctx.fillText("DATE MATCH · 2026", 44, 70);
+  ctx.fillStyle = "#ffd2df";
+  ctx.beginPath(); ctx.arc(650, 92, 112, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(54, 820, 88, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#c9213a";
+  ctx.font = "700 38px 'Segoe UI Symbol', sans-serif";
+  ctx.fillText("♥", 610, 104);
+  ctx.fillText("♥", 60, 806);
 
-  ctx.fillStyle = "#f7f5f2";
-  ctx.font = "900 64px Arial, sans-serif";
-  ctx.fillText("우리 둘,", 44, 180);
-  ctx.fillText("출전 확정.", 44, 250);
+  ctx.fillStyle = "#b66a7c";
+  ctx.font = "600 19px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+  ctx.fillText("성희에게 보내는 작은 약속", 52, 74);
 
-  ctx.fillStyle = "#141414";
-  ctx.fillRect(44, 320, 632, 380);
-  ctx.strokeStyle = "#e31b23";
+  ctx.fillStyle = "#57343d";
+  ctx.font = "800 49px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+  ctx.fillText("우리 약속 생겼다 ♥", 52, 154);
+  ctx.fillStyle = "#946a75";
+  ctx.font = "500 24px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+  ctx.fillText("8월 16일이 조금 더 기다려질 것 같아.", 52, 202);
+
+  roundedRect(ctx, 42, 266, 636, 396, 30);
+  ctx.fillStyle = "rgba(255,255,255,.92)";
+  ctx.fill();
+  ctx.strokeStyle = "#f1a9ba";
   ctx.lineWidth = 3;
-  ctx.strokeRect(44, 320, 632, 380);
+  ctx.stroke();
 
-  ctx.fillStyle = "#e31b23";
-  ctx.fillRect(44, 320, 632, 64);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "800 20px monospace";
-  ctx.fillText("BFC 1995 · DATE PROMISE", 70, 360);
+  ctx.fillStyle = "#c9213a";
+  ctx.font = "700 22px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+  ctx.fillText("우리의 데이트 약속", 72, 318);
 
   const rows = [
     ["날짜", koreanDate],
@@ -220,30 +347,45 @@ function drawPromiseCard() {
     ["메뉴", state.selectedMenu],
   ];
   rows.forEach(([label, value], index) => {
-    const y = 450 + index * 82;
-    ctx.fillStyle = "#8d8782";
-    ctx.font = "700 21px Arial, sans-serif";
+    const y = 402 + index * 88;
+    ctx.fillStyle = "#aa7c88";
+    ctx.font = "600 21px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
     ctx.fillText(label, 72, y);
-    ctx.fillStyle = "#f7f5f2";
-    ctx.font = "900 27px Arial, sans-serif";
+    ctx.fillStyle = "#57343d";
+    ctx.font = "700 28px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
     ctx.textAlign = "right";
     ctx.fillText(value, 646, y);
     ctx.textAlign = "left";
     if (index < 2) {
-      ctx.strokeStyle = "#302d2b";
+      ctx.strokeStyle = "#f2d9df";
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(70, y + 31); ctx.lineTo(650, y + 31); ctx.stroke();
     }
   });
 
-  ctx.fillStyle = "#c8c2bd";
-  ctx.font = "700 25px Arial, sans-serif";
+  ctx.fillStyle = "#57343d";
+  ctx.font = "600 27px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
   const [, month, day] = TARGET_DATE.split("-").map(Number);
-  ctx.fillText(`성희야, ${month}월 ${day}일에 보자.`, 44, 780);
-  ctx.fillStyle = "#e31b23";
-  ctx.font = "900 22px monospace";
-  ctx.fillText("SEONGHEE × ME", 44, 830);
+  ctx.fillText(`성희야, ${month}월 ${day}일 오후 네 시에 보자 :)`, 52, 752);
+  ctx.fillStyle = "#c9213a";
+  ctx.font = "700 23px 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+  ctx.fillText("성희랑 나, 둘이서 ♥", 52, 804);
   return canvas;
+}
+
+function roundedRect(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 function canvasToBlob(canvas) {
@@ -269,7 +411,7 @@ document.querySelector("#save-button").addEventListener("click", async () => {
 });
 
 document.querySelector("#share-button").addEventListener("click", async () => {
-  const shareText = `성희야, 우리 ${koreanDate} ${koreanTime}에 ${state.selectedMenu} 먹으러 가자!`;
+  const shareText = `성희야, 우리 ${koreanDate} ${koreanTime}에 ${state.selectedMenu} 먹으러 가자 ♥`;
   try {
     const data = { title: "우리의 데이트 약속", text: shareText, url: location.href };
 
@@ -294,7 +436,7 @@ document.querySelector("#restart-button").addEventListener("click", () => locati
 
 function burstConfetti(amount) {
   const box = document.querySelector("#confetti");
-  const colors = ["#e31b23", "#f7f5f2", "#2dff72"];
+  const colors = ["#c9213a", "#ffd2df", "#ffffff", "#f3a3b8"];
   for (let i = 0; i < amount; i += 1) {
     const piece = document.createElement("i");
     piece.className = "confetti-piece";

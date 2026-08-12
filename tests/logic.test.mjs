@@ -4,9 +4,11 @@ import assert from "node:assert/strict";
 import {
   TARGET_DATE,
   TARGET_TIME,
-  datePrankForAttempt,
+  challengeIndexForAttempt,
   formatKoreanDate,
   formatKoreanTime,
+  pickFarPosition,
+  shouldExplodeAfterAttempt,
   noButtonLabel,
   normalizeCustomMenu,
   validateSchedule,
@@ -18,11 +20,13 @@ test("the invitation accepts only August 16, 2026 at 4 PM", () => {
   assert.equal(validateSchedule(TARGET_DATE, "17:00").reason, "time");
 });
 
-test("wrong-date pranks escalate across three attempts", () => {
-  assert.equal(datePrankForAttempt(1).mode, "reset");
-  assert.equal(datePrankForAttempt(2).mode, "dodge");
-  assert.equal(datePrankForAttempt(3).mode, "lock");
-  assert.equal(datePrankForAttempt(8).mode, "lock");
+test("three wrong-date challenges end with the calendar explosion", () => {
+  assert.equal(challengeIndexForAttempt(1), 0);
+  assert.equal(challengeIndexForAttempt(2), 1);
+  assert.equal(challengeIndexForAttempt(3), 2);
+  assert.equal(challengeIndexForAttempt(8), 2);
+  assert.equal(shouldExplodeAfterAttempt(2), false);
+  assert.equal(shouldExplodeAfterAttempt(3), true);
 });
 
 test("the no button gets cheekier after its second escape", () => {
@@ -40,4 +44,20 @@ test("custom food is trimmed and limited to a card-friendly length", () => {
 test("the fixed date is rendered naturally in Korean", () => {
   assert.equal(formatKoreanDate(TARGET_DATE), "2026년 8월 16일");
   assert.equal(formatKoreanTime(TARGET_TIME), "오후 4:00");
+});
+
+test("escaping controls choose a far, visible viewport position", () => {
+  const position = pickFarPosition({
+    viewportWidth: 390,
+    viewportHeight: 844,
+    elementWidth: 120,
+    elementHeight: 54,
+    pointerX: 330,
+    pointerY: 720,
+    random: () => 0.5,
+  });
+
+  assert.ok(position.x >= 12 && position.x <= 258);
+  assert.ok(position.y >= 12 && position.y <= 778);
+  assert.ok(Math.hypot(position.x - 330, position.y - 720) > 500);
 });
