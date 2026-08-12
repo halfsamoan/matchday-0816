@@ -461,18 +461,26 @@ function burstConfetti(amount) {
 }
 
 const codeLines = [
-  "const target = '성희';",
-  "scan(schedule);",
-  `date.lock('${TARGET_DATE.slice(5)}');`,
-  `time.set('${TARGET_TIME}');`,
-  "if (answer === '싫어') flee();",
-  "choice.freedom = false;",
-  "menu.awaitInput();",
-  "heart.rate += 16;",
-  "deploy(datePromise);",
-  "console.log('성공?');",
-  "retry(untilYes);",
-  "status = '두근두근';",
+  `print("성희 바보");`,
+  `deploy("성희 사랑해");`,
+  `repeat("성희 보고 싶다");`,
+  `send("밥은 먹었냐");`,
+  `while(보고싶음) 연락();`,
+  `if(성희웃음) 광대상승();`,
+  `push(내마음, "성희");`,
+  `lockDate("${TARGET_DATE.slice(5)}");`,
+  `setTime("${TARGET_TIME}");`,
+  `runAway("싫어 버튼");`,
+  `assert(성희 == 귀여움);`,
+  `try { 안떨리는척(); }`,
+  `catch { 사실떨림(); }`,
+  `feed(성희, "맛있는 거");`,
+  `think("오늘도 성희");`,
+  `onReply(() => 신남());`,
+  `tease("성희 바보 ㅋㅋ");`,
+  `love("성희", Infinity);`,
+  `promise("재밌게 놀기");`,
+  `return "결론은 보고 싶다";`,
 ];
 let codeIndex = 0;
 let codeTimer;
