@@ -11,6 +11,7 @@ import {
 
 const state = {
   dateAttempts: 0,
+  dateDodgeTimer: 0,
   noEscapes: 0,
   selectedMenu: "",
 };
@@ -56,6 +57,7 @@ function showToast(message) {
 
 function moveNoButton(event) {
   if (event?.cancelable) event.preventDefault();
+  if (event?.type === "click" && event.detail !== 0) return;
   state.noEscapes += 1;
   noButton.textContent = noButtonLabel(state.noEscapes);
   noButton.classList.add("is-escaping");
@@ -71,8 +73,12 @@ function moveNoButton(event) {
   noButton.style.top = `${y}px`;
 }
 
-noButton.addEventListener("pointerenter", moveNoButton);
-noButton.addEventListener("touchstart", moveNoButton, { passive: false });
+noButton.addEventListener("pointerenter", (event) => {
+  if (event.pointerType !== "touch") moveNoButton(event);
+});
+noButton.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "touch") moveNoButton(event);
+});
 noButton.addEventListener("click", moveNoButton);
 
 document.querySelector("#yes-button").addEventListener("click", () => {
@@ -93,7 +99,7 @@ function setScheduleToTarget() {
 document.querySelector("#accept-date-button").addEventListener("click", setScheduleToTarget);
 
 scheduleButton.addEventListener("pointerenter", () => {
-  if (state.dateAttempts === 2 && dateInput.value !== TARGET_DATE) {
+  if (state.dateAttempts === 1 && dateInput.value !== TARGET_DATE) {
     const x = (Math.random() - .5) * Math.min(240, window.innerWidth * .45);
     const y = (Math.random() - .5) * 100;
     scheduleButton.style.transform = `translate(${x}px, ${y}px)`;
@@ -102,6 +108,7 @@ scheduleButton.addEventListener("pointerenter", () => {
 });
 
 dateInput.addEventListener("change", () => {
+  clearTimeout(state.dateDodgeTimer);
   scheduleButton.removeAttribute("style");
   scheduleButton.textContent = "이 날 좋아";
   dateStatus.textContent = "";
@@ -128,11 +135,13 @@ scheduleButton.addEventListener("click", () => {
     scheduleForm.classList.remove("is-dodging");
     void scheduleForm.offsetWidth;
     scheduleForm.classList.add("is-dodging");
-    setTimeout(() => {
-      dateInput.value = "";
+    clearTimeout(state.dateDodgeTimer);
+    state.dateDodgeTimer = setTimeout(() => {
+      if (state.dateAttempts === 2 && dateInput.value !== TARGET_DATE) dateInput.value = "";
       scheduleForm.classList.remove("is-dodging");
     }, 650);
   } else {
+    clearTimeout(state.dateDodgeTimer);
     scheduleForm.classList.add("is-gone");
     dateLock.hidden = false;
     scheduleButton.disabled = true;
@@ -144,10 +153,10 @@ document.querySelectorAll(".menu-card").forEach((button) => {
     document.querySelectorAll(".menu-card").forEach((card) => card.classList.remove("is-selected"));
     button.classList.add("is-selected");
     const menu = button.dataset.menu;
-    state.selectedMenu = menu === "기타" ? "" : menu;
+    state.selectedMenu = menu === "기타" ? normalizeCustomMenu(customMenuInput.value) : menu;
     customMenuWrap.hidden = menu !== "기타";
     menuStatus.textContent = "";
-    menuButton.disabled = menu === "기타";
+    menuButton.disabled = !state.selectedMenu;
     if (menu === "기타") {
       customMenuInput.focus();
     }
@@ -165,6 +174,7 @@ menuButton.addEventListener("click", () => {
     return;
   }
   document.querySelector("#result-menu").textContent = state.selectedMenu;
+  promiseCardBlob = getPromiseCardBlob();
   showScreen("screen-result");
   burstConfetti(40);
 });
