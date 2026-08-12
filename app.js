@@ -100,7 +100,10 @@ function moveEscapingControl(element, event) {
     elementHeight: rect.height || 54,
     pointerX,
     pointerY,
+    originX: rect.left,
+    originY: rect.top,
     padding: 14,
+    maxMoveRatio: 0.7,
   });
   element.style.transition = "none";
   element.classList.add("is-escaping");

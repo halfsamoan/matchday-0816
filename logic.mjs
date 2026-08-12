@@ -42,7 +42,10 @@ export function pickFarPosition({
   elementHeight,
   pointerX,
   pointerY,
+  originX = pointerX,
+  originY = pointerY,
   padding = 12,
+  maxMoveRatio = 0.7,
   random = Math.random,
 }) {
   const maxX = Math.max(padding, viewportWidth - elementWidth - padding);
@@ -56,9 +59,19 @@ export function pickFarPosition({
     { x: maxX - random() * jitterX, y: maxY - random() * jitterY },
   ];
 
-  return candidates.reduce((farthest, candidate) => {
+  const farthest = candidates.reduce((currentFarthest, candidate) => {
     const candidateDistance = Math.hypot(candidate.x - pointerX, candidate.y - pointerY);
-    const farthestDistance = Math.hypot(farthest.x - pointerX, farthest.y - pointerY);
-    return candidateDistance > farthestDistance ? candidate : farthest;
+    const farthestDistance = Math.hypot(currentFarthest.x - pointerX, currentFarthest.y - pointerY);
+    return candidateDistance > farthestDistance ? candidate : currentFarthest;
   });
+
+  const deltaX = farthest.x - originX;
+  const deltaY = farthest.y - originY;
+  const normalizedDistance = Math.hypot(deltaX / viewportWidth, deltaY / viewportHeight);
+  const scale = normalizedDistance > maxMoveRatio ? maxMoveRatio / normalizedDistance : 1;
+
+  return {
+    x: Math.min(maxX, Math.max(padding, originX + deltaX * scale)),
+    y: Math.min(maxY, Math.max(padding, originY + deltaY * scale)),
+  };
 }

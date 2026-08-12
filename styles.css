@@ -267,13 +267,36 @@ input:focus-visible {
 #schedule-button.is-escaping {
   position: fixed;
   z-index: 90;
-  box-shadow: 0 12px 28px rgba(109, 48, 66, .24);
+  color: #6b3e49;
+  background: #fffafb;
+  box-shadow:
+    0 0 0 2px rgba(201, 33, 58, .24),
+    0 14px 32px rgba(109, 48, 66, .3);
   transition:
     left .48s cubic-bezier(.18, .72, .22, 1),
     top .48s cubic-bezier(.18, .72, .22, 1),
     transform .2s ease,
     box-shadow .2s ease;
   will-change: left, top;
+}
+
+.escape-button.is-escaping::after {
+  content: "💨";
+  position: absolute;
+  top: -19px;
+  right: -20px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(201, 33, 58, .16);
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 6px 14px rgba(109, 48, 66, .2);
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  font-size: 1.2rem;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .field {

@@ -46,7 +46,8 @@ test("the fixed date is rendered naturally in Korean", () => {
   assert.equal(formatKoreanTime(TARGET_TIME), "오후 4:00");
 });
 
-test("escaping controls choose a far, visible viewport position", () => {
+test("escaping controls stay visible and within 70% of their origin", () => {
+  const origin = { x: 330, y: 720 };
   const position = pickFarPosition({
     viewportWidth: 390,
     viewportHeight: 844,
@@ -54,10 +55,17 @@ test("escaping controls choose a far, visible viewport position", () => {
     elementHeight: 54,
     pointerX: 330,
     pointerY: 720,
+    originX: origin.x,
+    originY: origin.y,
     random: () => 0.5,
   });
 
   assert.ok(position.x >= 12 && position.x <= 258);
   assert.ok(position.y >= 12 && position.y <= 778);
-  assert.ok(Math.hypot(position.x - 330, position.y - 720) > 500);
+  const normalizedDistance = Math.hypot(
+    (position.x - origin.x) / 390,
+    (position.y - origin.y) / 844,
+  );
+  assert.ok(normalizedDistance <= 0.7 + Number.EPSILON);
+  assert.ok(normalizedDistance > 0.6);
 });
