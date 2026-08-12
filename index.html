@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="description" content="성희에게 보내는 2026년 8월 16일 데이트 초대장" />
+    <title>성희야, 8월 16일 어때?</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-target-date="2026-08-16" data-target-time="16:00">
+    <aside class="code-feed" aria-hidden="true">
+      <div class="code-feed__bar">
+        <span class="code-feed__dot"></span>
+        <span>date_plan.js</span>
+      </div>
+      <div class="code-feed__lines" id="code-lines"></div>
+    </aside>
+
+    <div class="stadium-light stadium-light--left" aria-hidden="true"></div>
+    <div class="stadium-light stadium-light--right" aria-hidden="true"></div>
+    <div class="pitch-lines" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <header class="match-header">
+        <div class="club-mark" aria-label="BFC 1995 테마 마크">
+          <span>BFC</span>
+          <strong>1995</strong>
+        </div>
+        <div class="match-meta">
+          <span>MATCHDAY</span>
+          <strong id="header-schedule">2026.08.16 · 16:00</strong>
+        </div>
+        <div class="step-count" id="step-count" aria-live="polite">01 / 04</div>
+      </header>
+
+      <section class="panel screen" id="screen-intro" data-step="1" aria-labelledby="intro-title">
+        <div class="red-rule"></div>
+        <p class="eyebrow">단독 협상 제안</p>
+        <h1 id="intro-title">성희야,<br /><em>나랑 데이트 할래?</em></h1>
+        <p class="lead">경기 일정도 비워뒀고, 계획은 이미 거의 끝났어.</p>
+        <div class="button-row button-row--intro">
+          <button class="button button--primary" id="yes-button" type="button">응, 좋아</button>
+          <button class="button button--muted escape-button" id="no-button" type="button">싫어</button>
+        </div>
+        <p class="tiny-note">* 답은 두 개처럼 보이지만 아닐 수도 있음</p>
+      </section>
+
+      <section class="panel screen" id="screen-confirm" data-step="1" aria-labelledby="confirm-title" hidden>
+        <div class="red-rule"></div>
+        <p class="eyebrow">협상 타결</p>
+        <h2 id="confirm-title">진짜 좋다고?</h2>
+        <p class="lead">방금 못 들은 척할 뻔했어.<br />한 번만 더 확실하게 말해줘.</p>
+        <button class="button button--primary button--wide" id="confirm-button" type="button">응응, 진짜 좋아</button>
+      </section>
+
+      <section class="panel screen" id="screen-schedule" data-step="2" aria-labelledby="schedule-title" hidden>
+        <div class="red-rule"></div>
+        <p class="eyebrow">경기 일정 등록</p>
+        <h2 id="schedule-title">우리 언제 만날까?</h2>
+        <p class="lead">편한 날짜를 골라봐. 분명 선택은 자유야.</p>
+
+        <div class="schedule-form" id="schedule-form">
+          <label class="field" id="date-field">
+            <span>날짜</span>
+            <input id="date-input" type="date" min="2026-01-01" max="2026-12-31" />
+          </label>
+          <div class="field field--fixed">
+            <span>시간</span>
+            <strong id="fixed-time">오후 4:00</strong>
+            <small>이건 이미 정해뒀어</small>
+          </div>
+        </div>
+
+        <div class="date-lock" id="date-lock" hidden>
+          <p>달력이 도망갔어.</p>
+          <button class="button button--outline button--wide" id="accept-date-button" type="button">8월 16일로 마음 고쳐먹기</button>
+        </div>
+
+        <p class="status-message" id="date-status" aria-live="assertive"></p>
+        <button class="button button--primary button--wide" id="schedule-button" type="button">이 날 좋아</button>
+      </section>
+
+      <section class="panel screen" id="screen-menu" data-step="3" aria-labelledby="menu-title" hidden>
+        <div class="red-rule"></div>
+        <p class="eyebrow">오늘의 선발 메뉴</p>
+        <h2 id="menu-title">뭐 먹고 싶어?</h2>
+        <p class="lead">난 진짜 다 좋아. 성희가 하나만 골라줘.</p>
+
+        <div class="menu-grid" id="menu-grid" role="group" aria-label="음식 메뉴">
+          <button class="menu-card" type="button" data-menu="피자"><span>🍕</span>피자</button>
+          <button class="menu-card" type="button" data-menu="스시"><span>🍣</span>스시</button>
+          <button class="menu-card" type="button" data-menu="햄버거"><span>🍔</span>햄버거</button>
+          <button class="menu-card" type="button" data-menu="파스타"><span>🍝</span>파스타</button>
+          <button class="menu-card" type="button" data-menu="국밥"><span>🍚</span>국밥</button>
+          <button class="menu-card" type="button" data-menu="라멘"><span>🍜</span>라멘</button>
+          <button class="menu-card menu-card--other" type="button" data-menu="기타"><span>＋</span>기타</button>
+        </div>
+
+        <label class="custom-menu" id="custom-menu-wrap" hidden>
+          <span>다른 메뉴</span>
+          <input id="custom-menu-input" type="text" maxlength="18" placeholder="먹고 싶은 거 직접 적어줘" autocomplete="off" />
+        </label>
+        <p class="status-message" id="menu-status" aria-live="polite"></p>
+        <button class="button button--primary button--wide" id="menu-button" type="button" disabled>이걸로 정할래</button>
+      </section>
+
+      <section class="panel screen" id="screen-result" data-step="4" aria-labelledby="result-title" hidden>
+        <div class="red-rule"></div>
+        <p class="eyebrow">최종 명단 발표</p>
+        <h2 id="result-title">우리 둘, 출전 확정.</h2>
+        <p class="lead">싫다고 안 해줘서 기뻐. 나 꽤 기대하고 있어.</p>
+
+        <div class="promise-card" id="promise-card">
+          <div class="promise-card__top">
+            <span>DATE MATCH</span>
+            <strong>BFC 1995</strong>
+          </div>
+          <dl>
+            <div><dt>날짜</dt><dd id="result-date">2026년 8월 16일</dd></div>
+            <div><dt>시간</dt><dd id="result-time">오후 4:00</dd></div>
+            <div><dt>메뉴</dt><dd id="result-menu">-</dd></div>
+          </dl>
+          <div class="promise-card__footer">성희 × 나</div>
+        </div>
+
+        <div class="result-actions">
+          <button class="button button--primary button--wide" id="save-button" type="button">약속 카드 이미지 저장</button>
+          <button class="button button--share button--wide" id="share-button" type="button">카톡으로 공유</button>
+          <button class="text-button" id="restart-button" type="button">처음부터 다시</button>
+        </div>
+        <p class="status-message" id="share-status" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
