@@ -52,38 +52,11 @@ button { -webkit-tap-highlight-color: transparent; }
 
 .match-header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   padding: 4px 4px 18px;
   color: var(--ink);
-}
-
-.club-mark {
-  width: 58px;
-  height: 62px;
-  display: grid;
-  place-content: center;
-  text-align: center;
-  color: white;
-  background: var(--cherry);
-  border: 3px solid white;
-  border-radius: 18px 18px 23px 23px;
-  box-shadow: 0 7px 0 rgba(159, 23, 48, .18);
-  transform: rotate(-3deg);
-  line-height: .88;
-}
-
-.club-mark span {
-  font-family: Georgia, serif;
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-.club-mark strong {
-  margin-top: 5px;
-  font-size: .62rem;
-  letter-spacing: .08em;
 }
 
 .match-meta { display: grid; gap: 4px; }
@@ -295,7 +268,12 @@ input:focus-visible {
   position: fixed;
   z-index: 90;
   box-shadow: 0 12px 28px rgba(109, 48, 66, .24);
-  transition: left .18s ease-out, top .18s ease-out;
+  transition:
+    left .48s cubic-bezier(.18, .72, .22, 1),
+    top .48s cubic-bezier(.18, .72, .22, 1),
+    transform .2s ease,
+    box-shadow .2s ease;
+  will-change: left, top;
 }
 
 .field {
@@ -916,12 +894,6 @@ input:focus-visible {
   .match-header {
     gap: 10px;
     padding-bottom: 14px;
-  }
-
-  .club-mark {
-    width: 48px;
-    height: 52px;
-    border-radius: 15px 15px 19px 19px;
   }
 
   .match-meta strong { font-size: .7rem; }

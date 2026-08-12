@@ -102,9 +102,17 @@ function moveEscapingControl(element, event) {
     pointerY,
     padding: 14,
   });
+  element.style.transition = "none";
   element.classList.add("is-escaping");
-  element.style.left = `${position.x}px`;
-  element.style.top = `${position.y}px`;
+  element.style.left = `${rect.left}px`;
+  element.style.top = `${rect.top}px`;
+  void element.offsetWidth;
+  element.style.removeProperty("transition");
+
+  window.requestAnimationFrame(() => {
+    element.style.left = `${position.x}px`;
+    element.style.top = `${position.y}px`;
+  });
 }
 
 function moveNoButton(event) {
