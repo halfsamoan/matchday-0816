@@ -1,36 +1,38 @@
 # Matchday 0816
 
-경기 관람 약속을 고르는 작은 웹 초대장입니다.
+A small browser invitation built as a sequence of interactive choices.
 
-단계별 질문과 선택 화면으로 약속을 정합니다. HTML, CSS, JavaScript로 구성되어 별도 빌드가 필요 없습니다.
+## Implementation
 
-## Quickstart
+- Separates invitation state and selection rules from DOM rendering.
+- Uses constrained button movement and step transitions for the invitation flow.
+- Runs as static HTML, CSS, and JavaScript without a build step.
 
-Python이 설치된 환경에서 저장소 루트에서 실행합니다.
+The content and fixed date belong to a personal invitation; this is not a general scheduling service.
+
+[State rules](logic.mjs) · [DOM behavior](app.js) · [Logic tests](tests/logic.test.mjs)
+
+## Run
+
+From the repository root, with Python installed:
 
 ```sh
 python -m http.server 4174 --bind 127.0.0.1
 ```
 
-[로컬 초대장](http://127.0.0.1:4174)을 열어 첫 화면부터 진행합니다.
+Open [localhost:4174](http://127.0.0.1:4174).
 
-## 초대장
+## Validation
 
-- **단계별 선택:** 질문과 응답을 순서대로 보여줍니다.
-- **화면 전환:** 선택 결과에 따라 다음 장면으로 이동합니다.
-- **모바일 화면:** 휴대폰에서 읽고 선택할 수 있게 구성했습니다.
-
-개인 약속용으로 만든 페이지이며, 화면의 날짜와 내용은 이 초대장을 기준으로 합니다.
-
-## 검증
-
-Node.js가 설치된 환경에서 실행합니다.
+With Node.js installed:
 
 ```sh
 npm test
 npm run check
 ```
 
+The Node test suite covers the fixed date, challenge progression, input handling, and button movement bounds. The check script validates JavaScript syntax.
+
 ## License
 
-별도의 공개 라이선스를 지정하지 않았습니다.
+No separate public license is specified.
